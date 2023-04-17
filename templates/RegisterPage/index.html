@@ -1,0 +1,117 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="{% static 'RegisterPage/css/style.css' %}">
+    <title>Register</title>
+</head>
+<body>
+    <div class="container">
+        <div id="form">
+            <form method="POST">
+                {% csrf_token %}
+
+                <img id="twitter_small_logo" src="{% static 'LoginPage/img/twitter_small_logo.png'%}" alt="" onclick="window.location.href = '/home/'">
+        
+                <p class="p_form_input">
+                    {{form.username}}
+                </p>
+                <p id="usernameStatus" hidden></p>
+
+        
+                <p class="p_form_input">
+                    {{form.email}}
+                </p>
+ 
+                <p class="p_form_input">
+                    {{form.password}}
+                </p>
+        
+                <p class="p_form_input">
+                    {{form.password2}}
+                </p>
+                <p id="passwordStatus" style="color: red;" hidden>Password needs to match!</p>
+                
+                <a href="/login">Already Own a Account?</a>
+                <input onclick="submitbtnfun()" id="submitBtn" type="submit" value="Next" disabled>
+        
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let usernameAvailable = false
+        let submitBtn = document.getElementById("submitBtn")
+        let buttonClicked = false
+        $(document).ready(function() {
+            document.getElementById("id_username").addEventListener('input', () => {
+                let username = document.getElementById("id_username").value
+                let usernameStatus = document.getElementById("usernameStatus")
+                if(username != "") {
+                    let concat_url = "{% url 'regCheckUsername' 'username' %}".replace('username', username)
+                    $.ajax({
+                        type:'GET',
+                        url:concat_url,
+                        success:function(response) {                        
+                            usernameStatus.hidden = false
+                            if(response.exist) {
+                                usernameStatus.style.color = 'red'
+                                usernameStatus.innerText = "Username is already taken."
+                                usernameAvailable = false
+                            }
+                            else {
+                                usernameStatus.style.color = 'green'
+                                usernameStatus.innerText = 'Username is available.'
+                                usernameAvailable = true
+                            }
+                        },
+                        error:function(response) {
+                            alert("An Error Occured")
+                        }
+                    })
+                }
+                else {
+                    usernameAvailable = false
+                    usernameStatus.hidden = true
+                    submitBtn.disabled = true
+                }
+            })
+            setInterval(() => {
+                let pass1 = document.getElementById("id_password")
+                let pass2 = document.getElementById("id_password2")
+                if((pass1.value == pass2.value) && pass1.value != "") {
+                    document.getElementById("passwordStatus").hidden = true
+                    if(usernameAvailable && !buttonClicked)
+                        submitBtn.disabled = false
+                    else submitBtn.disabled = true
+                }
+                else if(pass1.value == "" && pass2.value == "") {
+                    document.getElementById("passwordStatus").hidden = true
+                    submitBtn.disabled = true
+                }
+                else {
+                    document.getElementById("passwordStatus").hidden = false
+                    submitBtn.disabled = true
+                }
+            }, 1000)
+        
+        })
+
+        function submitbtnfun() {
+            submitBtn.disabled = true
+            buttonClicked = true
+            setTimeout(() => {
+                buttonClicked = false
+                submitBtn.disabled = false
+            }, 10000)
+            document.getElementById('form').submit()
+        }        
+
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,182 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{% static 'HomePage/css/style.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <title>Home</title>
+    <style>
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header_container">
+            <div id="logo_container">
+                <img src="{% static 'LoginPage/img/twitter_small_logo.png'%}" alt="" onclick="window.location.href = '/home/'">
+                <a href="/home/"><p>Twooter</p></a>
+            </div>
+            <div id="profile_tab">
+                <a href="/{{user.username}}" id="profile_tab_button">
+                    <p>{{  user.username }}</p> 
+                    <img src="/media/{{profile_pic}}" alt="Profile Pic">
+                </a>
+            </div>
+        </div>
+        <div id="main_container">
+            <div id="nav_container">
+                <div id="nav_buttons">
+                    <a href="/home/" class="nav_button">
+                        <span class="material-symbols-outlined">
+                            home
+                        </span>
+                        <p>Feed</p>
+                    </a>
+                    <a href="/{{user.username}}/" class="nav_button">
+                        <span class="material-symbols-outlined">
+                            person
+                        </span>
+                        <p>Profile</p>
+                    </a>
+                </div>
+                <div id="logOut_container">
+                    <button onclick="logOut()">Log Out</button>
+                </div>
+            </div>
+            <div id="tweets-container">
+                <form method="POST" id="tweetSendForm" class="tweet">
+                    {% csrf_token %}
+                    <div id="first_half">
+                        <img src="/media/{{profile_pic}}" alt="">
+                        <input type="text" id="TweetInput" name="message" placeholder="Your Text Here">
+                    </div>
+                    <div id="second_half">
+                        <input id="TweetSend" type="submit" value="Post" disabled>
+                    </div>
+                </form>
+                <div id="tweets_box">
+                    <!-- <div class="tweet" id="${tweet}" onclick="window.  location.href = '/${response.tweets[tweet].author}/${tweet}   '">
+                        <a href="/${response.tweets[tweet].author}">
+                        <img src="{% static 'ProfilePage/unknown.jpg' %}"   alt="Profile Pic Not Set">
+                        <p class="author">${response.tweets[tweet].author}</p>
+                        <p style="display: inline; color: gray;">${response.    tweets[tweet].created_on}</p>
+                        </a><br>
+                        <p class="message">${response.tweets[tweet].message}</p>
+                        <button class="editButton" onclick="editButton(this)"><i    class="fa fa-ellipsis-v" style="font-size: 24px;"></i></   button>
+                    </div> -->
+                </div>
+            </div>
+            <div id="activity_container"></div>
+        </div>
+
+    </div>
+    <script>
+
+        $(window).on('load', () => {
+            getTweets()
+        })
+
+        function editButton(btn) {
+            console.log(btn)
+        }
+
+        $(document).on('submit', '#tweetSendForm', (e) => {
+            e.preventDefault()
+
+            $.ajax({
+                type:'POST',
+                url: "{% url 'sendTweet' %}",
+                data: {
+                    message:$('#TweetInput').val(),
+                    csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+                },
+                success:function(data) {
+                    if(data.logOutLMAO)
+                        window.location.reload()
+                    else if(data.tweetSent) {
+                        document.getElementById("TweetInput").value = ""
+                        document.getElementById("TweetSend").disabled = true
+                        getTweets()
+                    }
+                    else 
+                        alert("An Error Occured")
+                }
+            })
+        })
+
+        function logOut() {
+            let url = "{% url 'logOut' %}"
+            $.ajax({
+                type:'GET',
+                url:url,
+                success:function(response) {
+                    if(response.loggedOut)
+                        window.location.reload()
+                    else
+                        alert("Failed to log out.")
+                },
+                error:function(response) {
+                    alert("An Error Occured.")
+                }
+            })
+        }
+
+        function getTweets() {
+            let url = "{% url 'getTweets' %}"
+            $.ajax({
+                type:'GET',
+                url:url,
+                success:function(response) {
+                    $('#tweets_box').empty()
+                    for(let tweet in response.tweets) {
+                        let html = ''
+                        if(response.tweets[tweet].profile_pic != "") {
+                            html = `<div class="tweet" id="${tweet}" onclick="window.location.href = '/${response.tweets[tweet].author}/${tweet}'">
+                            <a href="/${response.tweets[tweet].author}">
+                            <img src="/media/${response.tweets[tweet].profile_pic}" alt="Profile Pic">
+                            <p class="author">@${response.tweets[tweet].author}</p>
+                            <p style="display: inline; color: gray;">${response.tweets[tweet].created_on}</p>
+                            </a>
+                            <p class="message">${response.tweets[tweet].message}</p>
+                            </div>`
+                        }
+                        else {
+                            html = `<div class="tweet" id="${tweet}" onclick="window.location.href = '/${response.tweets[tweet].author}/${tweet}'">
+                            <a href="/${response.tweets[tweet].author}">
+                            <img src="{% static 'ProfilePage/unknown.jpg' %}" alt="Profile Pic Not Set">
+                            <p class="author">@${response.tweets[tweet].author}</p>
+                            <p style="display: inline; color: gray;">${response.tweets[tweet].created_on}</p>
+                            </a>
+                            <p class="message">${response.tweets[tweet].message}</p>
+                            </div>`
+                        }
+                        $("#tweets_box").prepend(html)
+                    }
+                    
+                },
+                error:function() {
+                    alert("An Error Has Occured")
+                }
+            })
+        }
+
+        // Enabling Send Tweet Button
+        document.getElementById('TweetInput').addEventListener('input', () => {  
+            let tweetMesg = document.getElementById('TweetInput')
+            let btn = document.getElementById("TweetSend")
+            if(tweetMesg.value.trim() == "")
+                btn.disabled = true
+            else {
+                btn.disabled = false
+            }
+        })
+
+    </script>
+
+</body>
+</html>

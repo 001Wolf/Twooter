@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <link rel="stylesheet" href="{% static 'ProfilePage/css/profileEdit_style.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
+    <title>Edit Profile</title>
+    <style>
+        img {
+            height: 300px;
+        }
+        #photoInput:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="edit_container">
+            <form action="/{{user.user.username}}/update/" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div id="save_container">
+                    <span class="material-symbols-outlined" onclick="window.location.href = '/{{user.user.username}}'">
+                        close
+                    </span>
+                    <p>Edit Profile</p>
+                    <div id="save_btn">
+                        <input type="submit" value="Save">
+                    </div>
+                </div>
+                <div id="main_content">
+                    <div for="id_profile_pic" id="image_container" style="background-image: url('/media/{{user.profile_pic}}');">
+                        <div id="change_div">
+                            <span class="material-symbols-outlined">
+                                change_circle
+                            </span>
+                        </div>
+                    </div>
+                    <!-- <img src="/media/{{user.profile_pic}}" alt="Profile Pic"> -->
+                    <input type="file" name="profile_pic" id="id_profile_pic" accept="image/png, image/gif, image/jpeg, image/jpg" onchange="changeBackgroundImage(this)" hidden>
+                    <p hidden>Image has been loaded</p>
+                    <div class="input_box unselect">
+                        <div class="label">Name</div>
+                        <p id="username">{{user.user.username}}</p>
+                    </div>
+                    <div class="input_box">
+                        <div class="label">Bio</div>
+                        <input type="text" name="bio" id="id_bio" value="{{user.bio}}">
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        $('.input_box input').focus(e => {
+            e.target.parentElement.style.border = '1px solid rgb(72, 72, 198)'
+            e.target.parentNode.firstElementChild.style.color = 'rgb(72, 72, 198)'
+        }).blur(e => {
+            e.target.parentElement.style.border = '1px solid rgb(199, 199, 199)'
+            e.target.parentNode.firstElementChild.style.color = 'rgb(199, 199, 199)'
+        })
+
+        $('#image_container').hover(e => {
+            $('#change_div').show().css('display', 'flex')
+        }, e => {
+            $('#change_div').hide()
+        })
+
+        $('#change_div').click(e => {
+            document.getElementById('id_profile_pic').click()
+        })
+
+        function changeBackgroundImage(img) {
+            $("#main_content > p").css('display', 'block')
+        }
+        
+    </script>
+</body>
+</html>

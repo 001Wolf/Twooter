@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{% static 'LoginPage/css/style.css' %}">
+    <title>Login</title>
+</head>
+<body>
+    <div class="container">
+        <div id="form">
+            <form method="POST">
+                {% csrf_token %}
+                <img id="twitter_small_logo" src="{% static 'LoginPage/img/twitter_small_logo.png'%}" alt="" onclick="window.location.href = '/home/'">
+                {% if errStatus %}
+                    <p style="color: red; text-align: center;">{{ errStatus }}</p>
+                {% endif %}
+                {% if status %}
+                    <p style="color: aqua; text-align: center;">{{ status }}</p>
+                {% endif %}
+                <p>
+                    {{ form.username}}
+                </p>
+                <p>
+                    {{ form.password}}
+                </p>
+                <a href="/register">Don't have an Account?</a>
+                <input id="submit" type="submit" value="Next">
+                <input type="button" value="Forgot Password" hidden>
+        
+            </form>
+            
+        </div>
+    </div>
+    
+</body>
+</html>
